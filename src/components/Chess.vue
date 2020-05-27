@@ -1,7 +1,7 @@
 <template>
   <div class="chessContainer">
     <div v-for="(row, rowIndex) in chessBoard" :key="rowIndex">
-      <div v-for="(space, columnIndex) in row" :key="columnIndex" class="gridSquare"
+      <div v-for="(space, columnIndex) in row" :key="columnIndex" @click="movePiece(space, rowIndex, columnIndex)" class="gridSquare"
        :class="[isWhite(rowIndex, columnIndex) ? 'whiteBackground' : '', space.canMoveHere ? 'highlight' : '']">
         <div v-if="space.piece !== null"  @click="setMove(space.piece, rowIndex, columnIndex)" class="pieceContainer card" :class="[selectedPiece.rowIndex === rowIndex && selectedPiece.columnIndex === columnIndex ? 'selectedPiece' : '']" >
           <div class="iconContainer" >
@@ -49,9 +49,24 @@ export default {
     },
     setMove(piece, rowIndex, columnIndex) {
       this.clearHighlight()
+      debugger
       this.selectedPiece = { piece: piece, rowIndex: rowIndex, columnIndex: columnIndex }
-      if (piece.icon === 'chess-pawn') {
-        this.setPawnPossibleMoves (piece, rowIndex, columnIndex)
+   
+      switch (piece.icon) {
+        case 'chess-pawn':
+          this.setPawnPossibleMoves (piece, rowIndex, columnIndex)
+          break;
+      }
+    },
+    movePiece(space, rowIndex, columnIndex) {
+      if (space.canMoveHere) {
+        this.chessBoard[rowIndex][columnIndex].piece = this.selectedPiece.piece
+        this.chessBoard[this.selectedPiece.rowIndex][this.selectedPiece.columnIndex] = { 
+          rowIndex: null,
+          columnIndex: null,
+          piece: null 
+        }
+        this.clearHighlight()
       }
     },
     setPawnPossibleMoves (piece, rowIndex, columnIndex) {
