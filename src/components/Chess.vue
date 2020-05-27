@@ -51,16 +51,42 @@ export default {
       this.clearHighlight()
       this.selectedPiece = { piece: piece, rowIndex: rowIndex, columnIndex: columnIndex }
       if (piece.icon === 'chess-pawn') {
-        if(piece.team === 'black') {
-          if (this.chessBoard[rowIndex - 1][columnIndex].piece === null) {
-            this.chessBoard[rowIndex - 1][columnIndex].canMoveHere = true
+        this.setPawnPossibleMoves (piece, rowIndex, columnIndex)
+      }
+    },
+    setPawnPossibleMoves (piece, rowIndex, columnIndex) {
+      let isFirstMove = this.isPawnFirstMove(piece, rowIndex) 
+      if(piece.team === 'black') {
+        if (this.chessBoard[rowIndex - 1][columnIndex].piece === null) {
+          this.chessBoard[rowIndex - 1][columnIndex].canMoveHere = true
+          if (isFirstMove) {
+            if (this.chessBoard[rowIndex - 2][columnIndex].piece === null) {
+              this.chessBoard[rowIndex - 2][columnIndex].canMoveHere = true
+            } 
           }
-        } else {
-          if (this.chessBoard[rowIndex + 1][columnIndex].piece === null) {
-            this.chessBoard[rowIndex + 1][columnIndex].canMoveHere = true
+        }
+      } else {
+        if (this.chessBoard[rowIndex + 1][columnIndex].piece === null) {
+          this.chessBoard[rowIndex + 1][columnIndex].canMoveHere = true
+          if (isFirstMove) {
+            if (this.chessBoard[rowIndex + 2][columnIndex].piece === null) {
+              this.chessBoard[rowIndex + 2][columnIndex].canMoveHere = true
+            } 
           }
         }
       }
+    },
+    isPawnFirstMove (piece, rowIndex) {
+      if (piece.team === 'black') {
+        if (rowIndex === 6) {
+          return true
+        }
+      } else {
+        if (rowIndex === 1) {
+          return true
+        }
+      }
+      return false
     },
     clearHighlight () {
       this.chessBoard.forEach(row => {
@@ -132,12 +158,13 @@ export default {
 
 .highlight {
   background-color: lawngreen;
-  opacity: 50%;
+  border-top: solid black 1px;
+  opacity: 40%;
 }
 
 .selectedPiece {
   border: solid gold 5px;
-  animation: pulse 1s ease 0s infinite alternate;
+  /* animation: pulse 1s ease 0s infinite alternate; */
 }
 
 .icon {
