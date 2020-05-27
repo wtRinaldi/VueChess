@@ -1,10 +1,11 @@
 <template>
   <div class="chessContainer">
-    <div v-for="(row, rowIndex) in chessPieceLocation" :key="rowIndex">
-      <div v-for="(piece, gridIndex) in row" :key="gridIndex" class="gridSquare" :class="[isWhite(rowIndex, gridIndex) ? 'whiteSquare' : 'greySquare']">
-        <div class="pieceContainer">
-          <div v-if="piece !== null">
-            <font-awesome-icon :icon="piece.icon" style="font-size: 5vw;"/>
+    <div v-for="(row, rowIndex) in chessBoard" :key="rowIndex">
+      <div v-for="(space, columnIndex) in row" :key="columnIndex" class="gridSquare"
+       :class="[isWhite(rowIndex, columnIndex) ? 'whiteBackground' : '', space.canMoveHere ? 'highlight' : '']">
+        <div v-if="space.piece !== null"  @click="setMove(space.piece, rowIndex, columnIndex)" class="pieceContainer card" :class="[selectedPiece.rowIndex === rowIndex && selectedPiece.columnIndex === columnIndex ? 'selectedPiece' : '']" >
+          <div class="iconContainer" >
+            <font-awesome-icon :icon="space.piece.icon" class="icon" :class="[space.piece.team === 'white' ? 'white' : 'black']" />
           </div>
         </div>
       </div>
@@ -19,7 +20,12 @@ export default {
   name: 'Chessboard',
   data () {
     return {
-      chessPieceLocation: []
+      chessBoard: [],
+      selectedPiece: { 
+        rowIndex: null,
+        columnIndex: null,
+        piece: {} 
+      }
     }
   },
   methods: {
@@ -33,11 +39,40 @@ export default {
           return true
         }
       }
-    } 
+    },
+    isSelectedPiece (piece) {
+      if (this.selectedPiece == piece) {
+        return true
+      } else {
+        return false
+      }
+    },
+    setMove(piece, rowIndex, columnIndex) {
+      this.clearHighlight()
+      this.selectedPiece = { piece: piece, rowIndex: rowIndex, columnIndex: columnIndex }
+      if (piece.icon === 'chess-pawn') {
+        if(piece.team === 'black') {
+          if (this.chessBoard[rowIndex - 1][columnIndex].piece === null) {
+            this.chessBoard[rowIndex - 1][columnIndex].canMoveHere = true
+          }
+        } else {
+          if (this.chessBoard[rowIndex + 1][columnIndex].piece === null) {
+            this.chessBoard[rowIndex + 1][columnIndex].canMoveHere = true
+          }
+        }
+      }
+    },
+    clearHighlight () {
+      this.chessBoard.forEach(row => {
+        row.forEach(space => {
+          space.canMoveHere = false
+        })
+      })
+    }
   },
   created() {
     console.log('this is the chessboard')
-    this.chessPieceLocation = this.createChessPieces()
+    this.chessBoard = this.createChessPieces()
   },
   mixins: [createChessPieces]
 }
@@ -58,7 +93,7 @@ export default {
 }
 
 .gridSquare {
-  background-color: grey;
+  background-color: steelblue;
   padding: .5rem;
   flex: 1 0 .5rem;
   align-self: center;
@@ -75,11 +110,71 @@ export default {
   align-self: center;
 }
 
-.whiteSquare {
+.whiteBackground {
   background-color: white;
 }
 
-.greySquare {
+.white {
+  color: white;
+}
+
+.black {
+  color: black;
+}
+
+.greyBackgroud {
   background-color: grey;
 }
+
+.iconContainer {
+  align-items: center;
+}
+
+.highlight {
+  background-color: lawngreen;
+  opacity: 50%;
+}
+
+.selectedPiece {
+  border: solid gold 5px;
+  animation: pulse 1s ease 0s infinite alternate;
+}
+
+.icon {
+  font-size: 5vw;
+}
+
+.card {
+  /* Add shadows to create the "card" effect */
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.3);
+  transition: 0.3s;
+  width: 8vw;
+  height: 8vw;
+  border-radius: 50%;
+  background-color: silver;
+}
+
+/* On mouse-over, add a deeper shadow */
+.card:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.6);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0);
+  }
+  to{
+    transform: rotate(359deg);
+  }
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
+
 </style>
