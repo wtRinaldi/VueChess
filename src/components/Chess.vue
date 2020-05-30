@@ -54,7 +54,7 @@ export default {
       } else if (space.piece !== null) {
         if (this.selectedPiece.team !== '' && space.piece.team === this.selectedPiece.team) {
           this.clearHighlight()
-        }
+        } 
         this.selectedPiece = { rowIndex: rowIndex, columnIndex: columnIndex, team: space.piece.team, icon: space.piece.icon }
         switch (space.piece.icon) {
         case 'chess-pawn':
@@ -70,6 +70,12 @@ export default {
     movePiece(space, rowIndex, columnIndex) {
       this.chessBoard[rowIndex][columnIndex].piece = { team: this.selectedPiece.team, icon: this.selectedPiece.icon }
       this.chessBoard[this.selectedPiece.rowIndex][this.selectedPiece.columnIndex] = { canMoveHere: false, piece: null }
+      this.selectedPiece = { 
+        rowIndex: null,
+        columnIndex: null,
+        team: '',
+        icon: ''
+      }
       this.clearHighlight()
     },
     setPawnPossibleMoves (piece, rowIndex, columnIndex) {
