@@ -1,9 +1,9 @@
 <template>
   <div class="chessContainer">
     <div v-for="(row, rowIndex) in chessBoard" :key="rowIndex">
-      <div v-for="(space, columnIndex) in row" :key="columnIndex" @click="movePiece(space, rowIndex, columnIndex)" class="gridSquare"
+      <div v-for="(space, columnIndex) in row" :key="columnIndex" @click="setMove(space, rowIndex, columnIndex)" class="gridSquare"
        :class="[isWhite(rowIndex, columnIndex) ? 'whiteBackground' : '', space.canMoveHere ? 'highlight' : '']">
-        <div v-if="space.piece !== null"  @click="setMove(space.piece, rowIndex, columnIndex)" class="pieceContainer card" :class="[selectedPiece.rowIndex === rowIndex && selectedPiece.columnIndex === columnIndex ? 'selectedPiece' : '']" >
+        <div v-if="space.piece !== null" class="pieceContainer card" :class="[selectedPiece.rowIndex === rowIndex && selectedPiece.columnIndex === columnIndex ? 'selectedPiece' : '']" >
           <div class="iconContainer" >
             <font-awesome-icon :icon="space.piece.icon" class="icon" :class="[space.piece.team === 'white' ? 'white' : 'black']" />
           </div>
@@ -24,7 +24,8 @@ export default {
       selectedPiece: { 
         rowIndex: null,
         columnIndex: null,
-        piece: {} 
+        team: '',
+        icon: ''
       }
     }
   },
@@ -47,47 +48,54 @@ export default {
         return false
       }
     },
-    setMove(piece, rowIndex, columnIndex) {
+    setMove(space, rowIndex, columnIndex) {
       this.clearHighlight()
-      debugger
-      this.selectedPiece = { piece: piece, rowIndex: rowIndex, columnIndex: columnIndex }
-   
-      switch (piece.icon) {
+      if (this.selectedPiece.icon === '' && space.piece.icon === '') {
+        return
+      }
+      if (this.selectedPiece.icon === '') {
+        this.selectedPiece = { rowIndex: rowIndex, columnIndex: columnIndex, team: space.piece.team, icon: space.piece.icon }
+      }
+
+      switch (space.piece.icon) {
         case 'chess-pawn':
-          this.setPawnPossibleMoves (piece, rowIndex, columnIndex)
+          this.setPawnPossibleMoves (space.piece, rowIndex, columnIndex)
           break;
       }
+      if (this.selectedPiece.icon !== '') {
+        this.movePiece(space, rowIndex, columnIndex)
+      } 
     },
     movePiece(space, rowIndex, columnIndex) {
       if (space.canMoveHere) {
-        this.chessBoard[rowIndex][columnIndex].piece = this.selectedPiece.piece
-        this.chessBoard[this.selectedPiece.rowIndex][this.selectedPiece.columnIndex] = { 
-          rowIndex: null,
-          columnIndex: null,
-          piece: null 
-        }
+        this.chessBoard[rowIndex][columnIndex].piece = { team: this.selectedPiece.team, icon: this.selectedPiece.icon }
+        this.chessBoard[this.selectedPiece.rowIndex][this.selectedPiece.columnIndex] = this.createChessPieces.space(null)
         this.clearHighlight()
       }
     },
     setPawnPossibleMoves (piece, rowIndex, columnIndex) {
-      let isFirstMove = this.isPawnFirstMove(piece, rowIndex) 
-      if(piece.team === 'black') {
-        if (this.chessBoard[rowIndex - 1][columnIndex].piece === null) {
-          this.chessBoard[rowIndex - 1][columnIndex].canMoveHere = true
-          if (isFirstMove) {
-            if (this.chessBoard[rowIndex - 2][columnIndex].piece === null) {
-              this.chessBoard[rowIndex - 2][columnIndex].canMoveHere = true
-            } 
-          }
+      let moveModifier = piece.team === 'white' ? 1 : -1,
+      isFirstMove = this.isPawnFirstMove(piece, rowIndex),
+      leftAttackSpace = this.chessBoard[rowIndex + moveModifier][columnIndex - 1],
+      rightAttackSpace = this.chessBoard[rowIndex + moveModifier][columnIndex + 1]
+
+      if (this.chessBoard[rowIndex + moveModifier][columnIndex].piece === null) {
+        this.chessBoard[rowIndex + moveModifier][columnIndex].canMoveHere = true
+        if (isFirstMove) {
+          if (this.chessBoard[rowIndex + (2 * moveModifier)][columnIndex].piece === null) {
+            this.chessBoard[rowIndex + (2 * moveModifier)][columnIndex].canMoveHere = true
+          } 
         }
-      } else {
-        if (this.chessBoard[rowIndex + 1][columnIndex].piece === null) {
-          this.chessBoard[rowIndex + 1][columnIndex].canMoveHere = true
-          if (isFirstMove) {
-            if (this.chessBoard[rowIndex + 2][columnIndex].piece === null) {
-              this.chessBoard[rowIndex + 2][columnIndex].canMoveHere = true
-            } 
-          }
+      }
+      if (leftAttackSpace) {
+        if (leftAttackSpace.piece !== null && leftAttackSpace.piece.team !== piece.team) {
+          leftAttackSpace.canMoveHere = true
+        }
+      }
+
+      if (rightAttackSpace) {
+        if (rightAttackSpace.piece !== null && rightAttackSpace.piece.team !== piece.team) {
+          rightAttackSpace.canMoveHere = true
         }
       }
     },
@@ -117,7 +125,7 @@ export default {
   },
   mixins: [createChessPieces]
 }
-
+// @click="setMove(space.piece, rowIndex, columnIndex)"
 </script>
 
 <style scoped>
@@ -173,7 +181,6 @@ export default {
 
 .highlight {
   background-color: lawngreen;
-  border-top: solid black 1px;
   opacity: 40%;
 }
 
