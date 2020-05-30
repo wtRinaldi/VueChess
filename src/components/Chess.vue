@@ -49,29 +49,28 @@ export default {
       }
     },
     setMove(space, rowIndex, columnIndex) {
-      this.clearHighlight()
       if (this.selectedPiece.icon === '' && space.piece.icon === '') {
         return
-      }
-      if (this.selectedPiece.icon === '') {
+      } else if (space.piece !== null) {
+        if (this.selectedPiece.team !== '' && space.piece.team === this.selectedPiece.team) {
+          this.clearHighlight()
+        }
         this.selectedPiece = { rowIndex: rowIndex, columnIndex: columnIndex, team: space.piece.team, icon: space.piece.icon }
-      }
-
-      switch (space.piece.icon) {
+        switch (space.piece.icon) {
         case 'chess-pawn':
           this.setPawnPossibleMoves (space.piece, rowIndex, columnIndex)
           break;
+        }
       }
-      if (this.selectedPiece.icon !== '') {
+
+      if (space.canMoveHere) {
         this.movePiece(space, rowIndex, columnIndex)
-      } 
+      }
     },
     movePiece(space, rowIndex, columnIndex) {
-      if (space.canMoveHere) {
-        this.chessBoard[rowIndex][columnIndex].piece = { team: this.selectedPiece.team, icon: this.selectedPiece.icon }
-        this.chessBoard[this.selectedPiece.rowIndex][this.selectedPiece.columnIndex] = this.createChessPieces.space(null)
-        this.clearHighlight()
-      }
+      this.chessBoard[rowIndex][columnIndex].piece = { team: this.selectedPiece.team, icon: this.selectedPiece.icon }
+      this.chessBoard[this.selectedPiece.rowIndex][this.selectedPiece.columnIndex] = { canMoveHere: false, piece: null }
+      this.clearHighlight()
     },
     setPawnPossibleMoves (piece, rowIndex, columnIndex) {
       let moveModifier = piece.team === 'white' ? 1 : -1,
