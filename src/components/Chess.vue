@@ -54,6 +54,12 @@ export default {
       } else if (space.piece !== null) {
         if (this.selectedPiece.team !== '' && space.piece.team === this.selectedPiece.team) {
           this.clearHighlight()
+        }
+        if (this.selectedPiece.team !== '' && space.piece.team !== this.selectedPiece.team) {
+          if (space.canMoveHere) {
+            this.movePiece(space, rowIndex, columnIndex)
+          }
+          return
         } 
         this.selectedPiece = { rowIndex: rowIndex, columnIndex: columnIndex, team: space.piece.team, icon: space.piece.icon }
         switch (space.piece.icon) {
