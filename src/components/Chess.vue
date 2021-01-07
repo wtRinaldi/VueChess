@@ -30,6 +30,7 @@ export default {
     }
   },
   methods: {
+    // testing
     isWhite (rowIndex, gridIndex) {
       if (rowIndex % 2 === 0) {
         if (gridIndex % 2 === 0) {
